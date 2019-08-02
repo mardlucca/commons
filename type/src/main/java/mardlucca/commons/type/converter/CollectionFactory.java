@@ -1,5 +1,5 @@
 /*
- * File: settings.gradle
+ * File: CollectionFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,6 +16,13 @@
  * limitations under the License.
  */
 
-include ':sample-project'
-include ':lang'
-include ':type'
+package mardlucca.commons.type.converter;
+
+import java.util.Collection;
+
+/**
+ * Created by mlucca on 1/23/17.
+ */
+public interface CollectionFactory<T> {
+    Collection<T> newInstance(int size);
+}

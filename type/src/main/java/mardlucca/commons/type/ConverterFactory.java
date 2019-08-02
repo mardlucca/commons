@@ -1,5 +1,5 @@
 /*
- * File: settings.gradle
+ * File: ConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,6 +16,20 @@
  * limitations under the License.
  */
 
-include ':sample-project'
-include ':lang'
-include ':type'
+package mardlucca.commons.type;
+
+import mardlucca.commons.lang.TypeReference;
+
+import java.lang.reflect.Type;
+
+/**
+ * Created by mlucca on 1/20/17.
+ */
+public interface ConverterFactory {
+    <F, T> Converter<F, T> getConverter(Type aInFrom, Type aInTo);
+
+    default <F, T> Converter<F, T> getConverter(
+            TypeReference<F> aInFrom, TypeReference<T> aInTo) {
+        return getConverter(aInFrom.getType(), aInTo.getType());
+    }
+}

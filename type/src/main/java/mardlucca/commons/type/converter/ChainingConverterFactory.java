@@ -1,5 +1,5 @@
 /*
- * File: settings.gradle
+ * File: ChainingConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,6 +16,18 @@
  * limitations under the License.
  */
 
-include ':sample-project'
-include ':lang'
-include ':type'
+package mardlucca.commons.type.converter;
+
+import mardlucca.commons.type.Converter;
+
+import java.lang.reflect.Type;
+
+public interface ChainingConverterFactory {
+    <F, T> Converter<F, T> getConverter(
+            Type aInFrom, Type aInTo, FactoryChain aInChain);
+
+    interface FactoryChain {
+        <F, T> Converter<F, T> invokeNext(Type aInFrom, Type aInTo);
+        <F, T> Converter<F, T> invokeFirst(Type aInFrom, Type aInTo);
+    }
+}

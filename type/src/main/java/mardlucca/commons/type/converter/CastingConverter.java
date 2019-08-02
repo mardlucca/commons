@@ -1,5 +1,5 @@
 /*
- * File: settings.gradle
+ * File: CastingConverter.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,6 +16,16 @@
  * limitations under the License.
  */
 
-include ':sample-project'
-include ':lang'
-include ':type'
+package mardlucca.commons.type.converter;
+
+import mardlucca.commons.type.Converter;
+
+/**
+ * Created by mlucca on 1/17/17.
+ */
+public class CastingConverter<F, T> implements Converter<F, T> {
+    @Override
+    public T convert(F aInFrom) {
+        return (T) aInFrom;
+    }
+}

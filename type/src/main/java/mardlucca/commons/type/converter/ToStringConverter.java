@@ -1,5 +1,5 @@
 /*
- * File: settings.gradle
+ * File: ToStringConverter.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,6 +16,16 @@
  * limitations under the License.
  */
 
-include ':sample-project'
-include ':lang'
-include ':type'
+package mardlucca.commons.type.converter;
+
+import mardlucca.commons.type.Converter;
+
+/**
+ * Created by mlucca on 1/24/17.
+ */
+public class ToStringConverter<T> implements Converter<T, String> {
+    @Override
+    public String convert(T aInFrom) {
+        return aInFrom == null ? null : aInFrom.toString();
+    }
+}

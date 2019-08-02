@@ -1,5 +1,5 @@
 /*
- * File: settings.gradle
+ * File: IdentityConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,6 +16,21 @@
  * limitations under the License.
  */
 
-include ':sample-project'
-include ':lang'
-include ':type'
+package mardlucca.commons.type.converter;
+
+import mardlucca.commons.type.Converter;
+
+import java.lang.reflect.Type;
+
+public class IdentityConverterFactory implements ChainingConverterFactory {
+    @Override
+    public <F, T> Converter<F, T> getConverter(
+            Type aInFrom, Type aInTo, FactoryChain aInChain) {
+
+        if (aInFrom.equals(aInTo)) {
+            return (Converter<F, T>) Converter.identityConverter();
+        }
+
+        return aInChain.invokeNext(aInFrom, aInTo);
+    }
+}

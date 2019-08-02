@@ -1,5 +1,5 @@
 /*
- * File: settings.gradle
+ * File: CastingConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,6 +16,20 @@
  * limitations under the License.
  */
 
-include ':sample-project'
-include ':lang'
-include ':type'
+package mardlucca.commons.type.converter;
+
+import mardlucca.commons.type.Converter;
+
+import java.lang.reflect.Type;
+
+/**
+ * Created by mlucca on 1/20/17.
+ */
+public class CastingConverterFactory implements ChainingConverterFactory {
+
+    @Override
+    public <F, T> Converter<F, T> getConverter(
+            Type aInFrom, Type aInTo, FactoryChain aInChain) {
+        return new CastingConverter<>();
+    }
+}
