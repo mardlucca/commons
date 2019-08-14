@@ -1,5 +1,5 @@
 /*
- * File: CollectionToCollectionConverter.java
+ * File: MapConverter.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -20,35 +20,37 @@ package mardlucca.commons.type.converter;
 
 import mardlucca.commons.type.Converter;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by mlucca on 1/20/17.
  */
-public class CollectionToCollectionConverter<F, T>
-        implements Converter<Collection<F>, Collection<T>> {
-    private Converter<F, T> elementConverter;
+public class MapConverter<FK, TK, FV, TV>
+        implements Converter<Map<FK, FV>, Map<TK, TV>> {
+    private Converter<FK, TK> keyConverter;
+    private Converter<FV, TV> valueConverter;
 
-    private CollectionFactory<T> factory;
-
-    CollectionToCollectionConverter(
-            Converter<F, T> aInElementConverter,
-            CollectionFactory<T> aInFactory) {
-        elementConverter = aInElementConverter;
-        factory = aInFactory;
+    public MapConverter(
+            Converter<FK, TK> aInKeyConverter,
+            Converter<FV, TV> aInValueConverter) {
+        keyConverter = aInKeyConverter;
+        valueConverter = aInValueConverter;
     }
 
     @Override
-    public Collection<T> convert(Collection<F> aInFrom) {
+    public Map<TK, TV> convert(Map<FK, FV> aInFrom) {
         if (aInFrom == null) {
             return null;
         }
 
-        Collection<T> lReturn = factory.newInstance(aInFrom.size());
-        for (F lItem : aInFrom) {
-            lReturn.add(elementConverter.convert(lItem));
+        Map<TK, TV> lConvertedMap = new HashMap<>(aInFrom.size());
+
+        for (Map.Entry<FK, FV> lEntry : aInFrom.entrySet()) {
+            lConvertedMap.put(keyConverter.convert(lEntry.getKey()),
+                    valueConverter.convert(lEntry.getValue()));
         }
 
-        return lReturn;
+        return lConvertedMap;
     }
 }

@@ -20,80 +20,80 @@ package mardlucca.commons.type.converter;
 
 import mardlucca.commons.lang.TypeUtils;
 import mardlucca.commons.type.Converter;
+import mardlucca.commons.type.converter.ContainerConverter.ArrayContainerHandler;
+import mardlucca.commons.type.converter.ContainerConverter.CollectionContainerHandler;
+import mardlucca.commons.type.converter.ContainerConverter.ContainerFactory;
+import mardlucca.commons.type.converter.ContainerConverter.ContainerHandler;
+
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by mlucca on 1/21/17.
  */
-public class ContainerConverterFactory implements ChainingConverterFactory {
+public class ContainerConverterFactory
+        implements ChainingConverterFactory.ConverterFactory {
 
     @Override
     public <F, T> Converter<F, T> getConverter(
             Type aInFrom, Type aInTo, FactoryChain aInChain) {
-        Type lFromElementType;
-        Type lToElementType;
-        Converter<F, T> lElementConverter;
+        ContainerHandler lFromHandler = null;
+        ContainerHandler lToHander = null;
+        Type lFromElementType = null;
+        Type lToElementType = null;
 
-        // are we converting from an array to something?
         if (TypeUtils.isArrayType(aInFrom)) {
             lFromElementType = TypeUtils.getArrayComponentType(aInFrom);
-            if (TypeUtils.isArrayType(aInTo)) {
-                // converting from array to array
-
-                lToElementType = TypeUtils.getArrayComponentType(aInTo);
-                lElementConverter = aInChain.invokeFirst(
-                        lFromElementType, lToElementType);
-                if (lElementConverter == null) {
-                    // couldn't find converter for individual elements.
-                    return aInChain.invokeNext(aInFrom, aInTo);
-                }
-
-                return new ArrayToArrayConverter(
-                        lElementConverter,
-                        TypeUtils.getArrayClass(aInTo));
-            } else if (TypeUtils.isCollection(aInTo)) {
-                lToElementType = TypeUtils.getCollectionElementType(aInTo);
-                lElementConverter = aInChain.invokeFirst(
-                        lFromElementType, lToElementType);
-                if (lElementConverter == null) {
-                    // can't convert element types. we keep looking down the
-                    // chain for other potential converters
-                    return aInChain.invokeNext(aInFrom, aInTo);
-                }
-                return new ArrayToCollectionConverter(lElementConverter,
-                        new ConstructorBackedCollectionFactory(
-                                TypeUtils.getCollectionClass(aInTo)));
-            }
-            // else we're converting to neither an array nor a collection, which
-            // means this factory cannot produce a converter for this conversion
-
+            lFromHandler = new ArrayContainerHandler(
+                    (Class<?>) lFromElementType);
         } else if (TypeUtils.isCollection(aInFrom)) {
-            // we are converting from a collection to something
-
             lFromElementType = TypeUtils.getCollectionElementType(aInFrom);
+            // don't need a container factory in the "from" side as we are not
+            // going to create a container using this handler
+            lFromHandler = new CollectionContainerHandler(null);
+        }
+
+        if (lFromHandler != null) {
             if (TypeUtils.isArrayType(aInTo)) {
                 lToElementType = TypeUtils.getArrayComponentType(aInTo);
-                lElementConverter = aInChain.invokeFirst(
-                        lFromElementType, lToElementType);
-                if (lElementConverter == null) {
-                    return aInChain.invokeNext(aInFrom, aInTo);
-                }
-                return new CollectionToArrayConverter(lElementConverter,
-                        TypeUtils.getArrayClass(aInTo));
-            } else if (TypeUtils.isCollection(aInTo)) {
+                lToHander = new ArrayContainerHandler(
+                        (Class<?>) lToElementType);
+            } else if (TypeUtils.isCollection(aInFrom)) {
                 lToElementType = TypeUtils.getCollectionElementType(aInTo);
-                lElementConverter = aInChain.invokeFirst(
-                        lFromElementType, lToElementType);
-                if (lElementConverter == null) {
-                    return aInChain.invokeNext(aInFrom, aInTo);
-                }
-                return new CollectionToCollectionConverter(lElementConverter,
-                        new ConstructorBackedCollectionFactory(
-                                TypeUtils.getCollectionClass(aInTo)));
+                lToHander = new CollectionContainerHandler(getFactory(aInTo));
             }
-            // else we're converting to neither an array nor a collection, which
-            // means this factory cannot produce a converter for this conversion
         }
+
+        if (lFromHandler != null && lToHander != null) {
+            Converter<Object, Object> lElementConverter =
+                    aInChain.invokeFirst(lFromElementType, lToElementType);
+            if (lElementConverter != null) {
+                return (Converter<F, T>) new ContainerConverter(
+                        lFromHandler, lToHander, lElementConverter);
+            }
+        }
+
         return aInChain.invokeNext(aInFrom, aInTo);
+    }
+
+    private ContainerFactory getFactory(Type aInType) {
+        ParameterizedType lType = (ParameterizedType) aInType;
+        Class<?> lClass = (Class<?>) lType.getRawType();
+
+        // TODO: In the future will need to allow for the customization of what
+        // data structure implementation to use.
+        if (Set.class.isAssignableFrom(lClass)) {
+            return aInSize -> new HashSet<>();
+        }
+        if (Collection.class.isAssignableFrom(lClass)) {
+            return ArrayList::new;
+        }
+
+        // This should never happen
+        return null;
     }
 }

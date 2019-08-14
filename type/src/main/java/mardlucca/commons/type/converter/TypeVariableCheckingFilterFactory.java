@@ -1,5 +1,5 @@
 /*
- * File: IntPrimitiveToWrapperConverterDecorator.java
+ * File: TypeVariableCheckingFilterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,25 +16,24 @@
  * limitations under the License.
  */
 
-package mardlucca.commons.type.converter.primitivearray;
+package mardlucca.commons.type.converter;
 
-import mardlucca.commons.lang.ArrayUtils;
+import mardlucca.commons.lang.TypeUtils;
 import mardlucca.commons.type.Converter;
 
-/**
- * Created by mlucca on 1/24/17.
- */
-public class IntPrimitiveToWrapperConverterDecorator<T>
-        implements Converter<int[], T> {
-    private Converter<Integer[], T> delegateConverter;
+import java.lang.reflect.Type;
 
-    public IntPrimitiveToWrapperConverterDecorator(
-            Converter<Integer[], T> aInDelegateConverter) {
-        delegateConverter = aInDelegateConverter;
-    }
+public class TypeVariableCheckingFilterFactory
+        implements ChainingConverterFactory.ConverterFactory {
 
     @Override
-    public T convert(int[] aInFrom) {
-        return delegateConverter.convert(ArrayUtils.toWrapperArray(aInFrom));
+    public <F, T> Converter<F, T> getConverter(
+            Type aInFrom, Type aInTo, FactoryChain aInChain) {
+
+        if (TypeUtils.hasTypeVariables(aInFrom)
+                || TypeUtils.hasTypeVariables(aInTo)) {
+            return null;
+        }
+        return aInChain.invokeNext(aInFrom, aInTo);
     }
 }

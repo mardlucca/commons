@@ -1,5 +1,5 @@
 /*
- * File: CastingConverter.java
+ * File: AutoBoxingConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -18,14 +18,23 @@
 
 package mardlucca.commons.type.converter;
 
+import mardlucca.commons.lang.TypeUtils;
 import mardlucca.commons.type.Converter;
+import mardlucca.commons.type.converter.ChainingConverterFactory.ConverterFactory;
 
-/**
- * Created by mlucca on 1/17/17.
- */
-public class CastingConverter<F, T> implements Converter<F, T> {
+import java.lang.reflect.Type;
+
+public class AutoBoxingConverterFactory implements ConverterFactory {
+
     @Override
-    public T convert(F aInFrom) {
-        return (T) aInFrom;
+    public <F, T> Converter<F, T> getConverter(
+            Type aInFrom, Type aInTo, FactoryChain aInChain) {
+
+        if (TypeUtils.isPrimitiveFor(aInFrom, aInTo)
+                || TypeUtils.isWrapperFor(aInFrom, aInTo)) {
+            return (Converter<F, T>) Converter.identityConverter();
+        }
+
+        return aInChain.invokeNext(aInFrom, aInTo);
     }
 }

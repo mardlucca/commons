@@ -23,26 +23,22 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
+import java.lang.reflect.WildcardType;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by mlucca on 1/23/17.
  */
-public class TypeUtils
-{
+public class TypeUtils {
     private static Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_MAP;
 
     private static Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_MAP;
 
     private static Map<Class<?>, Integer> NUMERIC_TYPE_SIZE_ORDER;
 
-    static
-    {
+    static {
         PRIMITIVE_TO_WRAPPER_MAP = new HashMap<>();
         PRIMITIVE_TO_WRAPPER_MAP.put(char.class, Character.class);
         PRIMITIVE_TO_WRAPPER_MAP.put(boolean.class, Boolean.class);
@@ -81,11 +77,80 @@ public class TypeUtils
     /**
      * Private constructor. This is not meant to be instantiated.
      */
-    private TypeUtils() {}
+    private TypeUtils() {
+    }
+
+    public static boolean isGeneric(Type aInType) {
+        if (aInType instanceof Class) {
+            return false;
+        }
+
+        if (aInType instanceof TypeVariable
+                || aInType instanceof WildcardType) {
+            return true;
+        }
+
+        if (aInType instanceof ParameterizedType) {
+            for (Type lTypeParameter :
+                    ((ParameterizedType) aInType).getActualTypeArguments()) {
+                if (isGeneric(lTypeParameter)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        // else aInType is a GenericArrayType
+        GenericArrayType lArrayType = (GenericArrayType) aInType;
+        return isGeneric(lArrayType.getGenericComponentType());
+    }
+
+    public static boolean hasTypeVariables(Type aInType) {
+        if (aInType instanceof Class) {
+            return false;
+        }
+
+        if (aInType instanceof TypeVariable) {
+            return true;
+        }
+
+        if (aInType instanceof WildcardType) {
+            WildcardType lWildcardType = (WildcardType) aInType;
+            for (Type lUpperBound : lWildcardType.getUpperBounds()) {
+                if (hasTypeVariables(lUpperBound)) {
+                    return true;
+                }
+            }
+            for (Type lLowerBound : lWildcardType.getLowerBounds()) {
+                if (hasTypeVariables(lLowerBound)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (aInType instanceof ParameterizedType) {
+            for (Type lTypeParameter :
+                    ((ParameterizedType) aInType).getActualTypeArguments()) {
+                if (hasTypeVariables(lTypeParameter)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        // else aInType is a GenericArrayType
+        GenericArrayType lArrayType = (GenericArrayType) aInType;
+        return hasTypeVariables(lArrayType.getGenericComponentType());
+    }
 
     public static boolean isArrayType(Type aInType) {
-        if (aInType instanceof GenericArrayType) { return true; }
-        if (!(aInType instanceof Class)) { return false; }
+        if (aInType instanceof GenericArrayType) {
+            return true;
+        }
+        if (!(aInType instanceof Class)) {
+            return false;
+        }
         Class<?> lClass = (Class<?>) aInType;
         return lClass.isArray();
     }
@@ -96,212 +161,100 @@ public class TypeUtils
                     (GenericArrayType) aInArrayType;
             return lGenericArrayType.getGenericComponentType();
         }
-        if (!(aInArrayType instanceof Class)) { return null; }
+        if (!(aInArrayType instanceof Class)) {
+            return null;
+        }
         Class<?> lClass = (Class<?>) aInArrayType;
         return lClass.getComponentType();
     }
 
-    public static Type getCollectionElementType(Type aInCollectionType)
-    {
-        if (!isCollection(aInCollectionType))
-        {
+    public static Type getCollectionElementType(Type aInCollectionType) {
+        if (!isCollection(aInCollectionType)) {
             return null;
         }
-        if (aInCollectionType instanceof Class)
-        {
+        if (aInCollectionType instanceof Class) {
             // raw collection
             return Object.class;
         }
-        if (aInCollectionType instanceof ParameterizedType)
-        {
+        if (aInCollectionType instanceof ParameterizedType) {
             return ((ParameterizedType) aInCollectionType)
-                .getActualTypeArguments()[0];
+                    .getActualTypeArguments()[0];
         }
 
+        // this should never happen
         return null;
     }
 
-    public static Type[] getMapKeyValueTypes(Type aInMapType)
-    {
-        if (!isMap(aInMapType))
-        {
+    public static Type[] getMapKeyValueTypes(Type aInMapType) {
+        if (!isMap(aInMapType)) {
             return null;
         }
-        if (aInMapType instanceof Class)
-        {
+        if (aInMapType instanceof Class) {
             // raw map
-            return new Type[] { Object.class, Object.class };
+            return new Type[]{Object.class, Object.class};
         }
-        if (aInMapType instanceof ParameterizedType)
-        {
+        if (aInMapType instanceof ParameterizedType) {
             return ((ParameterizedType) aInMapType)
-                .getActualTypeArguments();
+                    .getActualTypeArguments();
         }
 
+        // this should never happen
         return null;
     }
 
-    public static boolean isCollection(Type aInTo)
-    {
-        if (aInTo instanceof Class)
-        {
+    public static boolean isCollection(Type aInTo) {
+        if (aInTo instanceof Class) {
             // raw collection, possibly
             return Collection.class.isAssignableFrom((Class<?>) aInTo);
         }
-        if (aInTo instanceof ParameterizedType)
-        {
+        if (aInTo instanceof ParameterizedType) {
             ParameterizedType lParameterizedType = (ParameterizedType) aInTo;
             Type lRawType = lParameterizedType.getRawType();
             return (lRawType instanceof Class
-                && Collection.class.isAssignableFrom((Class<?>) lRawType));
+                    && Collection.class.isAssignableFrom((Class<?>) lRawType));
         }
         return false;
     }
 
-    public static <T> Class<T> getArrayClass(Type aInType)
-    {
-        if (!isArrayType(aInType))
-        {
-            return null;
-        }
-
-        if (aInType instanceof Class)
-        {
-            // this is a regular array
-            Class<?> lArrayClass = (Class<?>) aInType;
-            Class<?> lComponentType = lArrayClass.getComponentType();
-            if (lComponentType.isPrimitive())
-            {
-                return (Class<T>) wrap(lComponentType);
-            }
-            else if (lComponentType.isArray())
-            {
-                // we need to convert multidimensional primitive arrays to
-                // multidimensional wrapper arrays
-                return (Class<T>) Array.newInstance(
-                    getArrayClass(lComponentType), 0).getClass();
-            }
-            return (Class<T>) lComponentType;
-        }
-
-        if (aInType instanceof GenericArrayType)
-        {
-            GenericArrayType lArrayType = (GenericArrayType) aInType;
-            return getGenericArrayComponentClass(
-                lArrayType.getGenericComponentType());
-        }
-
-        return null;
-    }
-
-    private static <T> Class<T> getGenericArrayComponentClass(Type aInType)
-    {
-        if (aInType instanceof ParameterizedType)
-        {
-            // generic array of parameterized types
-            ParameterizedType lParameterizedType = (ParameterizedType) aInType;
-            return (Class<T>) lParameterizedType.getRawType();
-        }
-        if (aInType instanceof TypeVariable)
-        {
-            // generic array of type variables
-            TypeVariable<?> lTypeVariable = (TypeVariable<?>) aInType;
-            return (Class<T>) lTypeVariable.getBounds()[0];
-        }
-        if (aInType instanceof GenericArrayType)
-        {
-            // multi dimensional generic array type
-            GenericArrayType lArrayType = (GenericArrayType) aInType;
-            Class<?> lComponentClass = getGenericArrayComponentClass(
-                lArrayType.getGenericComponentType());
-            Object lObject = Array.newInstance(lComponentClass, 1);
-            return (Class<T>) lObject.getClass();
-        }
-
-        return null;
-    }
-
-    public static Class<? extends Collection> getCollectionClass(
-        Type aInType)
-    {
-        if (!isCollection(aInType))
-        {
-            return null;
-        }
-
-        Class<? extends Collection> lCollectionType;
-        if (aInType instanceof Class)
-        {
-            // raw collection
-            lCollectionType = (Class<? extends Collection>) aInType;
-        }
-        else
-        {
-            ParameterizedType lParameterizedType = (ParameterizedType) aInType;
-            lCollectionType =
-                (Class<? extends Collection>) lParameterizedType.getRawType();
-        }
-
-        if (Set.class.isAssignableFrom(lCollectionType))
-        {
-            return lCollectionType.isInterface() ?
-                HashSet.class
-                : lCollectionType;
-        }
-
-        return lCollectionType.isInterface()
-            ?  ArrayList.class
-            : lCollectionType;
-    }
-
-    public static boolean isMap(Type aInTo)
-    {
-        if (aInTo instanceof Class)
-        {
+    public static boolean isMap(Type aInTo) {
+        if (aInTo instanceof Class) {
             // raw map?
             return Map.class.isAssignableFrom((Class<?>) aInTo);
         }
-        if (aInTo instanceof ParameterizedType)
-        {
+        if (aInTo instanceof ParameterizedType) {
             ParameterizedType lParameterizedType = (ParameterizedType) aInTo;
             Type lRawType = lParameterizedType.getRawType();
             return (lRawType instanceof Class
-                && Map.class.isAssignableFrom((Class<?>) lRawType));
+                    && Map.class.isAssignableFrom((Class<?>) lRawType));
         }
         return false;
     }
 
-    public static Type wrap(Type aInType)
-    {
-        if (!(aInType instanceof Class<?>))
-        {
+    public static Type boxingType(Type aInType) {
+        if (!(aInType instanceof Class<?>)) {
             return aInType;
         }
 
         Class<?> lClass = (Class<?>) aInType;
-        if (lClass.isPrimitive())
-        {
+        if (lClass.isPrimitive()) {
             return PRIMITIVE_TO_WRAPPER_MAP.get(lClass);
         }
         return lClass;
     }
 
-    public static boolean isNumeric(Type aInType)
-    {
-        if (!(aInType instanceof Class<?>))
-        {
+    public static boolean isNumeric(Type aInType) {
+        if (!(aInType instanceof Class<?>)) {
             return false;
         }
         Class<?> lClass = (Class<?>) aInType;
 
         if (Number.class.isAssignableFrom(lClass)
-            || lClass == byte.class
-            || lClass == short.class
-            || lClass == int.class
-            || lClass == long.class
-            || lClass == float.class
-            || lClass == double.class)
-        {
+                || lClass == byte.class
+                || lClass == short.class
+                || lClass == int.class
+                || lClass == long.class
+                || lClass == float.class
+                || lClass == double.class) {
             return true;
         }
 
@@ -309,68 +262,41 @@ public class TypeUtils
     }
 
     public static boolean isPrimitiveFor(Type aInPrimitiveType,
-        Type aInWrapperType)
-    {
+                                         Type aInWrapperType) {
         if (!(aInPrimitiveType instanceof Class<?>)
-            || !(aInWrapperType instanceof Class<?>))
-        {
+                || !(aInWrapperType instanceof Class<?>)) {
             return false;
         }
         Class<?> lPrimitiveClass = (Class<?>) aInPrimitiveType;
         Class<?> lWrapperClass = (Class<?>) aInWrapperType;
 
         return lWrapperClass.equals(
-            PRIMITIVE_TO_WRAPPER_MAP.get(lPrimitiveClass));
+                PRIMITIVE_TO_WRAPPER_MAP.get(lPrimitiveClass));
     }
 
     public static boolean isWrapperFor(Type aInWrapperType,
-        Type aInPrimitiveType)
-    {
+                                       Type aInPrimitiveType) {
         if (!(aInPrimitiveType instanceof Class<?>)
-            || !(aInWrapperType instanceof Class<?>))
-        {
+                || !(aInWrapperType instanceof Class<?>)) {
             return false;
         }
         Class<?> lPrimitiveClass = (Class<?>) aInPrimitiveType;
         Class<?> lWrapperClass = (Class<?>) aInWrapperType;
 
         return lPrimitiveClass.isPrimitive() && lPrimitiveClass.equals(
-            WRAPPER_TO_PRIMITIVE_MAP.get(lWrapperClass));
+                WRAPPER_TO_PRIMITIVE_MAP.get(lWrapperClass));
     }
 
-    public static int compareNumericSize(Type aInType1, Type aInType2)
-    {
-        if (!isNumeric(aInType1))
-        {
+    public static int compareNumericSize(Type aInType1, Type aInType2) {
+        if (!isNumeric(aInType1)) {
             throw new IllegalArgumentException(aInType1 + " is not numeric");
         }
-        if (!isNumeric(aInType2))
-        {
+        if (!isNumeric(aInType2)) {
             throw new IllegalArgumentException(aInType2 + " is not numeric");
         }
 
         return NUMERIC_TYPE_SIZE_ORDER.get(aInType1)
-            - NUMERIC_TYPE_SIZE_ORDER.get(aInType2);
-    }
-
-    public static boolean isContainerType(Type aInContainerType)
-    {
-        return isArrayType(aInContainerType)
-            || isCollection(aInContainerType);
-    }
-
-    public static Type getElementType(Type aInContainerType)
-    {
-        if (isArrayType(aInContainerType))
-        {
-            return getArrayComponentType(aInContainerType);
-        }
-        if (isCollection(aInContainerType))
-        {
-            return getCollectionElementType(aInContainerType);
-        }
-
-        return null;
+                - NUMERIC_TYPE_SIZE_ORDER.get(aInType2);
     }
 
     public static boolean isAssignable(Type aInFrom, Type aInTo) {

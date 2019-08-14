@@ -33,6 +33,12 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 # Ignore .idea files
+.idea/gradle.xml
+.idea/libraries
+.idea/shelf
 .idea/workspace.xml
-.idea/shelf/
+.idea/**/*.iml
+.idea/**/compiler.xml
+.idea/**/modules.xml
+
 

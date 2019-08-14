@@ -1,5 +1,5 @@
 /*
- * File: LongPrimitiveToWrapperConverterDecorator.java
+ * File: ToStringConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,25 +16,20 @@
  * limitations under the License.
  */
 
-package mardlucca.commons.type.converter.primitivearray;
+package mardlucca.commons.type.converter;
 
-import mardlucca.commons.lang.ArrayUtils;
 import mardlucca.commons.type.Converter;
 
-/**
- * Created by mlucca on 1/24/17.
- */
-public class LongPrimitiveToWrapperConverterDecorator<T>
-        implements Converter<long[], T> {
-    private Converter<Long[], T> delegateConverter;
+import java.lang.reflect.Type;
 
-    public LongPrimitiveToWrapperConverterDecorator(
-            Converter<Long[], T> aInDelegateConverter) {
-        delegateConverter = aInDelegateConverter;
-    }
-
+public class ToStringConverterFactory
+        implements ChainingConverterFactory.ConverterFactory {
     @Override
-    public T convert(long[] aInFrom) {
-        return delegateConverter.convert(ArrayUtils.toWrapperArray(aInFrom));
+    public <F, T> Converter<F, T> getConverter(
+            Type aInFrom, Type aInTo, FactoryChain aInChain) {
+        if (String.class.equals(aInTo)) {
+            return aInFromObject -> (T) aInFromObject.toString();
+        }
+        return aInChain.invokeNext(aInFrom, aInTo);
     }
 }

@@ -19,6 +19,7 @@
 package mardlucca.commons.type.converter;
 
 import mardlucca.commons.type.Converter;
+
 import java.lang.reflect.Type;
 
 import static mardlucca.commons.type.Converter.nullConverter;
@@ -26,7 +27,8 @@ import static mardlucca.commons.type.Converter.nullConverter;
 /**
  * Created by mlucca on 1/20/17.
  */
-public class PrimitiveTypeConverterFactory implements ChainingConverterFactory {
+public class PrimitiveTypeConverterFactory
+        implements ChainingConverterFactory.ConverterFactory {
     @Override
     public <F, T> Converter<F, T> getConverter(
             Type aInFrom, Type aInTo, FactoryChain aInChain) {
@@ -80,12 +82,14 @@ public class PrimitiveTypeConverterFactory implements ChainingConverterFactory {
     }
 
     private static Converter<Character, ?> getCharacterConverter(Type aInTo) {
-        if (double.class == aInTo || Double.class == aInTo
-                || float.class == aInTo || Float.class == aInTo
-                || int.class == aInTo || Integer.class == aInTo
-                ||long.class == aInTo || Long.class == aInTo) {
-
-            return nullConverter(Character.class::cast);
+        if (double.class == aInTo || Double.class == aInTo) {
+            return nullConverter(aInFrom -> (double) aInFrom);
+        }
+        if (float.class == aInTo || Float.class == aInTo) {
+            return nullConverter(aInFrom -> (float) aInFrom);
+        }
+        if (int.class == aInTo || Integer.class == aInTo) {
+            return nullConverter(aInFrom -> (int) aInFrom);
         }
         return null;
     }

@@ -22,7 +22,9 @@ import mardlucca.commons.type.Converter;
 
 import java.lang.reflect.Type;
 
-public class IdentityConverterFactory implements ChainingConverterFactory {
+public class IdentityConverterFactory
+        implements ChainingConverterFactory.ConverterFactory {
+
     @Override
     public <F, T> Converter<F, T> getConverter(
             Type aInFrom, Type aInTo, FactoryChain aInChain) {

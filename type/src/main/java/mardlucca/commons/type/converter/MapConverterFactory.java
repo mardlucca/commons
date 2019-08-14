@@ -26,10 +26,12 @@ import java.lang.reflect.Type;
 /**
  * Created by mlucca on 1/24/17.
  */
-public class MapConverterFactory implements ChainingConverterFactory {
+public class MapConverterFactory
+        implements ChainingConverterFactory.ConverterFactory {
     @Override
     public <F, T> Converter<F, T> getConverter(
             Type aInFrom, Type aInTo, FactoryChain aInChain) {
+
         if (TypeUtils.isMap(aInFrom) && TypeUtils.isMap(aInTo)) {
             Type[] aInFromTypes = TypeUtils.getMapKeyValueTypes(aInFrom);
             Type[] aInToTypes = TypeUtils.getMapKeyValueTypes(aInTo);
@@ -40,7 +42,7 @@ public class MapConverterFactory implements ChainingConverterFactory {
                     aInFromTypes[1], aInToTypes[1]);
 
             if (lKeyConverter != null && lValueConverter != null) {
-                return new MapToMapConverter<>(lKeyConverter, lValueConverter);
+                return new MapConverter<>(lKeyConverter, lValueConverter);
             }
         }
 
