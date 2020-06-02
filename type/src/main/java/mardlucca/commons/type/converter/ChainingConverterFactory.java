@@ -19,7 +19,7 @@
 package mardlucca.commons.type.converter;
 
 import mardlucca.commons.type.Converter;
-import mardlucca.commons.type.converter.ChainingConverterFactory.ConverterFactory.FactoryChain;
+import mardlucca.commons.type.ConverterFactory;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -31,14 +31,46 @@ import static java.util.Collections.singletonList;
  * Created by mlucca on 1/17/17.
  */
 public abstract class ChainingConverterFactory
-        implements mardlucca.commons.type.ConverterFactory {
+        implements ConverterFactory {
 
-    public abstract List<ConverterFactory> getFactories();
+    public abstract List<ChainedConverterFactory> getFactories();
 
     @Override
     public <F, T> Converter<F, T> getConverter(Type aInFrom, Type aInTo) {
         FactoryChain lChain = new ChainImpl();
         return lChain.invokeFirst(aInFrom, aInTo);
+    }
+
+    public static ConverterFactory singletonFactory(
+            ChainedConverterFactory aInChainedConverterFactory) {
+        return new ChainingConverterFactory() {
+            @Override
+            public List<ChainedConverterFactory> getFactories() {
+                return singletonList(aInChainedConverterFactory);
+            }
+        };
+    }
+
+    public static ConverterFactory fromFactories(
+            ChainedConverterFactory... aInChainedConverterFactory) {
+        return new ChainingConverterFactory() {
+            private List<ChainedConverterFactory> factories =
+                    asList(aInChainedConverterFactory);
+            @Override
+            public List<ChainedConverterFactory> getFactories() {
+                return factories;
+            }
+        };
+    }
+
+    public interface FactoryChain {
+        <F, T> Converter<F, T> invokeNext(Type aInFrom, Type aInTo);
+        <F, T> Converter<F, T> invokeFirst(Type aInFrom, Type aInTo);
+    }
+
+    public interface ChainedConverterFactory {
+        <F, T> Converter<F, T> getConverter(
+                Type aInFrom, Type aInTo, FactoryChain aInChain);
     }
 
     private class ChainImpl implements FactoryChain {
@@ -47,7 +79,7 @@ public abstract class ChainingConverterFactory
         @Override
         public <F, T> Converter<F, T> invokeNext(Type aInFrom, Type aInTo) {
             currentFactory++;
-            List<ConverterFactory> lFactories = getFactories();
+            List<ChainedConverterFactory> lFactories = getFactories();
             if (currentFactory >= lFactories.size()) {
                 return null;
             }
@@ -58,36 +90,6 @@ public abstract class ChainingConverterFactory
         @Override
         public <F, T> Converter<F, T> invokeFirst(Type aInFrom, Type aInTo) {
             return getFactories().get(0).getConverter(aInFrom, aInTo, this);
-        }
-    }
-
-    public static mardlucca.commons.type.ConverterFactory singletonFactory(
-            ConverterFactory aInConverterFactory) {
-        return new ChainingConverterFactory() {
-            @Override
-            public List<ConverterFactory> getFactories() {
-                return singletonList(aInConverterFactory);
-            }
-        };
-    }
-
-    public static mardlucca.commons.type.ConverterFactory fromFactories(
-            ConverterFactory... aInConverterFactory) {
-        return new ChainingConverterFactory() {
-            @Override
-            public List<ConverterFactory> getFactories() {
-                return asList(aInConverterFactory);
-            }
-        };
-    }
-
-    public interface ConverterFactory {
-        <F, T> Converter<F, T> getConverter(
-                Type aInFrom, Type aInTo, FactoryChain aInChain);
-
-        interface FactoryChain {
-            <F, T> Converter<F, T> invokeNext(Type aInFrom, Type aInTo);
-            <F, T> Converter<F, T> invokeFirst(Type aInFrom, Type aInTo);
         }
     }
 }

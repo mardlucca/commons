@@ -1,5 +1,5 @@
 /*
- * File: AutoBoxingConverterFactory.java
+ * File: ChainedAutoBoxingConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -20,11 +20,13 @@ package mardlucca.commons.type.converter;
 
 import mardlucca.commons.lang.TypeUtils;
 import mardlucca.commons.type.Converter;
-import mardlucca.commons.type.converter.ChainingConverterFactory.ConverterFactory;
+import mardlucca.commons.type.converter.ChainingConverterFactory.ChainedConverterFactory;
+import mardlucca.commons.type.converter.ChainingConverterFactory.FactoryChain;
 
 import java.lang.reflect.Type;
 
-public class AutoBoxingConverterFactory implements ConverterFactory {
+public class ChainedAutoBoxingConverterFactory
+        implements ChainedConverterFactory {
 
     @Override
     public <F, T> Converter<F, T> getConverter(

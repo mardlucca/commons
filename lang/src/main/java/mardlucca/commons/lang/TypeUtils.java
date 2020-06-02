@@ -18,7 +18,6 @@
 
 package mardlucca.commons.lang;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -26,6 +25,7 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -100,6 +100,7 @@ public class TypeUtils {
 
             return false;
         }
+
         // else aInType is a GenericArrayType
         GenericArrayType lArrayType = (GenericArrayType) aInType;
         return isGeneric(lArrayType.getGenericComponentType());
@@ -139,6 +140,7 @@ public class TypeUtils {
 
             return false;
         }
+
         // else aInType is a GenericArrayType
         GenericArrayType lArrayType = (GenericArrayType) aInType;
         return hasTypeVariables(lArrayType.getGenericComponentType());
@@ -172,10 +174,12 @@ public class TypeUtils {
         if (!isCollection(aInCollectionType)) {
             return null;
         }
+
         if (aInCollectionType instanceof Class) {
             // raw collection
             return Object.class;
         }
+
         if (aInCollectionType instanceof ParameterizedType) {
             return ((ParameterizedType) aInCollectionType)
                     .getActualTypeArguments()[0];
@@ -300,6 +304,10 @@ public class TypeUtils {
     }
 
     public static boolean isAssignable(Type aInFrom, Type aInTo) {
+        List l1 = null;
+        List<Integer> l2 = null;
+        
+        l2 = l1;
         // TODO: Figure this out. Commons lang has this but I'm considering
         // implementing my own simplified version
         return false;

@@ -1,5 +1,5 @@
 /*
- * File: ContainerConverterFactory.java
+ * File: ChainedContainerConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -20,6 +20,8 @@ package mardlucca.commons.type.converter;
 
 import mardlucca.commons.lang.TypeUtils;
 import mardlucca.commons.type.Converter;
+import mardlucca.commons.type.converter.ChainingConverterFactory.ChainedConverterFactory;
+import mardlucca.commons.type.converter.ChainingConverterFactory.FactoryChain;
 import mardlucca.commons.type.converter.ContainerConverter.ArrayContainerHandler;
 import mardlucca.commons.type.converter.ContainerConverter.CollectionContainerHandler;
 import mardlucca.commons.type.converter.ContainerConverter.ContainerFactory;
@@ -35,8 +37,8 @@ import java.util.Set;
 /**
  * Created by mlucca on 1/21/17.
  */
-public class ContainerConverterFactory
-        implements ChainingConverterFactory.ConverterFactory {
+public class ChainedContainerConverterFactory
+        implements ChainedConverterFactory {
 
     @Override
     public <F, T> Converter<F, T> getConverter(

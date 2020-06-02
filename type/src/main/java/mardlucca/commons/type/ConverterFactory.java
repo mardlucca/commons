@@ -1,5 +1,5 @@
 /*
- * File: ConverterFactory.java
+ * File: ChainedConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *

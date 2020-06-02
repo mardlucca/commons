@@ -1,5 +1,5 @@
 /*
- * File: IdentityConverterFactory.java
+ * File: TypeVariableFilteringChainedFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -18,21 +18,24 @@
 
 package mardlucca.commons.type.converter;
 
+import mardlucca.commons.lang.TypeUtils;
 import mardlucca.commons.type.Converter;
+import mardlucca.commons.type.converter.ChainingConverterFactory.ChainedConverterFactory;
+import mardlucca.commons.type.converter.ChainingConverterFactory.FactoryChain;
 
 import java.lang.reflect.Type;
 
-public class IdentityConverterFactory
-        implements ChainingConverterFactory.ConverterFactory {
+public class TypeVariableFilteringChainedFactory
+        implements ChainedConverterFactory {
 
     @Override
     public <F, T> Converter<F, T> getConverter(
             Type aInFrom, Type aInTo, FactoryChain aInChain) {
 
-        if (aInFrom.equals(aInTo)) {
-            return (Converter<F, T>) Converter.identityConverter();
+        if (TypeUtils.hasTypeVariables(aInFrom)
+                || TypeUtils.hasTypeVariables(aInTo)) {
+            return null;
         }
-
         return aInChain.invokeNext(aInFrom, aInTo);
     }
 }

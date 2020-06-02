@@ -1,5 +1,5 @@
 /*
- * File: PrimitiveTypeConverterFactoryTest.java
+ * File: ChainedPrimitiveTypeConverterFactoryTest.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -24,9 +24,9 @@ import org.junit.Test;
 import static mardlucca.commons.type.converter.ChainingConverterFactory.singletonFactory;
 import static org.junit.Assert.*;
 
-public class PrimitiveTypeConverterFactoryTest {
+public class ChainedPrimitiveTypeConverterFactoryTest {
     private ConverterFactory factory =
-            singletonFactory(new PrimitiveTypeConverterFactory());
+            singletonFactory(new ChainedPrimitiveTypeConverterFactory());
 
     @Test
     public void testConvertIntToInteger() {

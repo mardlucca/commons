@@ -1,5 +1,5 @@
 /*
- * File: ToStringConverterFactory.java
+ * File: ChainedCastingConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -18,18 +18,26 @@
 
 package mardlucca.commons.type.converter;
 
+import mardlucca.commons.lang.TypeUtils;
 import mardlucca.commons.type.Converter;
+import mardlucca.commons.type.converter.ChainingConverterFactory.ChainedConverterFactory;
+import mardlucca.commons.type.converter.ChainingConverterFactory.FactoryChain;
 
 import java.lang.reflect.Type;
 
-public class ToStringConverterFactory
-        implements ChainingConverterFactory.ConverterFactory {
+/**
+ * Created by mlucca on 1/21/17.
+ */
+public class ChainedCastingConverterFactory
+        implements ChainedConverterFactory {
+
     @Override
     public <F, T> Converter<F, T> getConverter(
             Type aInFrom, Type aInTo, FactoryChain aInChain) {
-        if (String.class.equals(aInTo)) {
-            return aInFromObject -> (T) aInFromObject.toString();
+        if (TypeUtils.isAssignable(aInFrom, aInTo)) {
+            return aInObject -> (T) aInObject;
         }
+
         return aInChain.invokeNext(aInFrom, aInTo);
     }
 }

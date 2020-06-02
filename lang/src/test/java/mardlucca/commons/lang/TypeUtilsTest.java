@@ -568,6 +568,15 @@ public class TypeUtilsTest<E, S extends Comparable<E>> {
         assertTrue(TypeUtils.isPrimitiveFor(long.class, Long.class));
         assertTrue(TypeUtils.isPrimitiveFor(short.class, Short.class));
 
+        assertFalse(TypeUtils.isPrimitiveFor(Boolean.class, boolean.class));
+        assertFalse(TypeUtils.isPrimitiveFor(Byte.class, byte.class));
+        assertFalse(TypeUtils.isPrimitiveFor(Character.class, char.class));
+        assertFalse(TypeUtils.isPrimitiveFor(Double.class, double.class));
+        assertFalse(TypeUtils.isPrimitiveFor(Float.class, float.class));
+        assertFalse(TypeUtils.isPrimitiveFor(Integer.class, int.class));
+        assertFalse(TypeUtils.isPrimitiveFor(Long.class, long.class));
+        assertFalse(TypeUtils.isPrimitiveFor(Short.class, short.class));
+
         assertFalse(TypeUtils.isPrimitiveFor(boolean.class, boolean.class));
         assertFalse(TypeUtils.isPrimitiveFor(byte.class, byte.class));
         assertFalse(TypeUtils.isPrimitiveFor(char.class, char.class));
@@ -600,6 +609,15 @@ public class TypeUtilsTest<E, S extends Comparable<E>> {
         assertTrue(TypeUtils.isWrapperFor(Integer.class, int.class));
         assertTrue(TypeUtils.isWrapperFor(Long.class, long.class));
         assertTrue(TypeUtils.isWrapperFor(Short.class, short.class));
+
+        assertFalse(TypeUtils.isWrapperFor(boolean.class, Boolean.class));
+        assertFalse(TypeUtils.isWrapperFor(byte.class, Byte.class));
+        assertFalse(TypeUtils.isWrapperFor(char.class, Character.class));
+        assertFalse(TypeUtils.isWrapperFor(double.class, Double.class));
+        assertFalse(TypeUtils.isWrapperFor(float.class, Float.class));
+        assertFalse(TypeUtils.isWrapperFor(int.class, Integer.class));
+        assertFalse(TypeUtils.isWrapperFor(long.class, Long.class));
+        assertFalse(TypeUtils.isWrapperFor(short.class, Short.class));
 
         assertFalse(TypeUtils.isWrapperFor(boolean.class, boolean.class));
         assertFalse(TypeUtils.isWrapperFor(byte.class, byte.class));

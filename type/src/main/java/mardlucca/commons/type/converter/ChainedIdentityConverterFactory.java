@@ -1,5 +1,5 @@
 /*
- * File: MapConverterFactory.java
+ * File: ChainedIdentityConverterFactory.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -18,32 +18,21 @@
 
 package mardlucca.commons.type.converter;
 
-import mardlucca.commons.lang.TypeUtils;
 import mardlucca.commons.type.Converter;
+import mardlucca.commons.type.converter.ChainingConverterFactory.ChainedConverterFactory;
+import mardlucca.commons.type.converter.ChainingConverterFactory.FactoryChain;
 
 import java.lang.reflect.Type;
 
-/**
- * Created by mlucca on 1/24/17.
- */
-public class MapConverterFactory
-        implements ChainingConverterFactory.ConverterFactory {
+public class ChainedIdentityConverterFactory
+        implements ChainedConverterFactory {
+
     @Override
     public <F, T> Converter<F, T> getConverter(
             Type aInFrom, Type aInTo, FactoryChain aInChain) {
 
-        if (TypeUtils.isMap(aInFrom) && TypeUtils.isMap(aInTo)) {
-            Type[] aInFromTypes = TypeUtils.getMapKeyValueTypes(aInFrom);
-            Type[] aInToTypes = TypeUtils.getMapKeyValueTypes(aInTo);
-
-            Converter lKeyConverter = aInChain.invokeFirst(
-                    aInFromTypes[0], aInToTypes[0]);
-            Converter lValueConverter = aInChain.invokeFirst(
-                    aInFromTypes[1], aInToTypes[1]);
-
-            if (lKeyConverter != null && lValueConverter != null) {
-                return new MapConverter<>(lKeyConverter, lValueConverter);
-            }
+        if (aInFrom.equals(aInTo)) {
+            return (Converter<F, T>) Converter.identityConverter();
         }
 
         return aInChain.invokeNext(aInFrom, aInTo);
