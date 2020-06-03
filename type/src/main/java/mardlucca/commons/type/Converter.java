@@ -1,5 +1,5 @@
 /*
- * File: settings.gradle
+ * File: Converter.java
  *
  * Copyright 2019 Marcio D. Lucca
  *
@@ -16,6 +16,20 @@
  * limitations under the License.
  */
 
-include ':sample-project'
-include ':lang'
-include ':type'
+package mardlucca.commons.type;
+
+/**
+ * Created by mlucca on 1/17/17.
+ */
+public interface Converter<F, T> {
+    T convert(F aInFrom);
+
+    static <F, T> Converter<F, T> nullConverter(Converter<F, T> aInConverter) {
+        return aInFrom ->
+                aInFrom == null ? null : aInConverter.convert(aInFrom);
+    }
+
+    static <T> Converter<T, T> identityConverter() {
+        return aInFrom -> aInFrom;
+    }
+}
